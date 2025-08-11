@@ -35,6 +35,7 @@ builds:
 
 archives:
   - id: targz
+    formats: ["tar.gz"]
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
@@ -46,6 +47,7 @@ archives:
       - README.md
       - LICENSE
   - id: zip
+    formats: ["zip"]
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
