@@ -115,6 +115,75 @@ You should observe:
 
 This project is licensed under the terms specified in the LICENSE file.
 
+## Development & CI
+
+### Continuous Integration
+
+The project includes automated CI that runs on every commit to the main branch and on pull requests:
+
+- **Testing**: Runs tests across multiple Go versions (1.23.x, 1.24.x)
+- **Cross-platform builds**: Verifies the code builds on Linux, Windows, and macOS
+- **Code quality**: Runs `go vet` and `staticcheck` for code analysis
+- **GoReleaser validation**: Ensures release configuration is valid
+
+### Running Tests Locally
+
+```bash
+# Run all tests
+go test -v ./...
+
+# Run tests with race detection
+go test -race ./...
+
+# Run benchmarks
+go test -bench=. ./...
+
+# Run static analysis
+go vet ./...
+staticcheck ./...
+```
+
+## Release Process
+
+This project uses [GoReleaser](https://goreleaser.com/) with GitHub Actions for automated releases.
+
+### Creating a Release
+
+1. **Tag a new version:**
+   ```bash
+   git tag -a v1.0.0 -m "Release v1.0.0"
+   git push origin v1.0.0
+   ```
+
+2. **GitHub Actions will automatically:**
+   - Build binaries for Linux, Windows, and macOS (both amd64 and arm64)
+   - Create release archives
+   - Generate checksums
+   - Create a GitHub release with changelog
+
+### Local Testing
+
+Test the release configuration locally:
+
+```bash
+# Install GoReleaser (if not already installed)
+go install github.com/goreleaser/goreleaser@latest
+
+# Test the build without publishing
+goreleaser build --snapshot --clean
+
+# Test the full release process without publishing
+goreleaser release --snapshot --clean
+```
+
+### Version Information
+
+The binary includes version information that can be displayed:
+
+```bash
+./cpu-benchmarking-tool -version
+```
+
 ## Contributing
 
 This is an educational project. Feel free to fork and experiment with different optimizations or add new execution modes for learning purposes.

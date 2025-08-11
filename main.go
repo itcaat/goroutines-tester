@@ -13,6 +13,14 @@ import (
 	"time"
 )
 
+// Version information injected by GoReleaser
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+	builtBy = "unknown"
+)
+
 // имитация тяжёлой CPU-задачи: генерим блок и хэшируем его
 func doTask(id, blockBytes int) [32]byte {
 	r := rand.New(rand.NewSource(int64(id)))
@@ -37,11 +45,22 @@ func main() {
 	trace.Start(tr)
 	defer trace.Stop()
 
+	var showVersion bool
 	flag.IntVar(&tasks, "tasks", 200, "сколько задач выполнить")
 	flag.IntVar(&blockKB, "blockKB", 1024, "размер блока данных на задачу (KB)")
 	flag.StringVar(&mode, "mode", "single", "режим: single | pool")
 	flag.IntVar(&workers, "workers", runtime.NumCPU(), "кол-во воркеров для режима pool")
+	flag.BoolVar(&showVersion, "version", false, "показать версию")
 	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("CPU Benchmarking Tool\n")
+		fmt.Printf("Version: %s\n", version)
+		fmt.Printf("Commit: %s\n", commit)
+		fmt.Printf("Date: %s\n", date)
+		fmt.Printf("Built by: %s\n", builtBy)
+		return
+	}
 
 	if workers < 1 {
 		workers = 1
