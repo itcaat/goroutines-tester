@@ -24,8 +24,8 @@ This program simulates heavy CPU work by generating random data blocks and compu
 Make sure you have Go 1.24.3 or later installed.
 
 ```bash
-git clone https://github.com/itcaat/prime-numbers
-cd prime-numbers
+git clone https://github.com/itcaat/goroutines-tester
+cd goroutines-tester
 go mod tidy
 ```
 

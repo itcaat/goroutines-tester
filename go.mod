@@ -1,3 +1,3 @@
-module github.com/itcaat/prime-numbers
+module github.com/itcaat/goroutines-tester
 
 go 1.24.3
