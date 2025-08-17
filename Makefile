@@ -51,10 +51,10 @@ monitoring-stop: ## Остановить мониторинг
 	docker-compose --profile monitoring down
 
 run: build ## Запустить приложение локально
-	./goroutines-tester -tasks=10 -metrics
+	./goroutines-tester -t 10 --metrics
 
 run-debug: build ## Запустить приложение локально с debug
-	./goroutines-tester -tasks=5 -debug -metrics
+	./goroutines-tester -t 5 -d --metrics
 
 # Команды для разработки
 dev-setup: ## Настроить окружение для разработки

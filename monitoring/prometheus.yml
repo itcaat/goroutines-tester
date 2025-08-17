@@ -5,7 +5,7 @@ global:
 scrape_configs:
   - job_name: 'goroutines-tester'
     static_configs:
-      - targets: ['goroutines-tester:8080']
+      - targets: ['goroutines-tester:8888']
     scrape_interval: 5s
     metrics_path: /metrics
     

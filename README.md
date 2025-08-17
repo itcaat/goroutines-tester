@@ -63,35 +63,35 @@ docker-compose --profile monitoring up -d
 go run main.go
 
 # Run in parallel mode with worker pool
-go run main.go -mode=pool
+go run main.go -m pool
 
 # Custom configuration
-go run main.go -tasks=500 -blockKB=2048 -mode=pool -workers=8
+go run main.go -t 500 -b 2048 -m pool -w 8
 ```
 
 ### Command Line Options
 
-- `-tasks`: Number of tasks to execute (default: 200)
-- `-blockKB`: Size of data block per task in KB (default: 1024)
-- `-mode`: Execution mode - `single` or `pool` (default: "single")
-- `-workers`: Number of workers for pool mode (default: number of CPU cores)
-- `-debug`: Enable CPU and trace profiling (default: false)
-- `-metrics`: Enable HTTP metrics server (default: false)
-- `-metrics-port`: Port for metrics server (default: "8080")
-- `-version`: Show version information
+- `-t, --tasks`: Number of tasks to execute (default: 200)
+- `-b, --blockKB`: Size of data block per task in KB (default: 1024)
+- `-m, --mode`: Execution mode - `single` or `pool` (default: "single")
+- `-w, --workers`: Number of workers for pool mode (default: number of CPU cores)
+- `-d, --debug`: Enable CPU and trace profiling (default: false)
+- `--metrics`: Enable HTTP metrics server (default: false)
+- `-p, --metrics-port`: Port for metrics server (default: "8888")
+- `-v, --version`: Show version information
 
 ### Examples
 
 ```bash
 # Compare single-threaded vs multi-threaded performance
-go run main.go -mode=single -tasks=100
-go run main.go -mode=pool -tasks=100
+go run main.go -m single -t 100
+go run main.go -m pool -t 100
 
 # Stress test with larger workload
-go run main.go -mode=pool -tasks=1000 -blockKB=4096 -workers=16
+go run main.go -m pool -t 1000 -b 4096 -w 16
 
 # Minimal workload for quick testing
-go run main.go -tasks=50 -blockKB=512
+go run main.go -t 50 -b 512
 ```
 
 ## Docker Usage
@@ -100,10 +100,10 @@ go run main.go -tasks=50 -blockKB=512
 
 ```bash
 # Run with default settings
-docker run -p 8080:8080 itcaat/goroutines-tester:latest
+docker run -p 8888:8888 itcaat/goroutines-tester:latest
 
 # Custom configuration via environment variables
-docker run -p 8080:8080 \
+docker run -p 8888:8888 \
   -e TASKS=500 \
   -e BLOCK_KB=2048 \
   -e MODE=pool \
@@ -112,7 +112,7 @@ docker run -p 8080:8080 \
 
 # Run without metrics (one-shot execution)
 docker run itcaat/goroutines-tester:latest \
-  ./goroutines-tester -tasks=100 -mode=single
+  ./goroutines-tester -t 100 -m single
 ```
 
 ### Using Makefile
@@ -138,8 +138,8 @@ make docker-stop
 
 When running with the monitoring profile:
 
-- **Application**: http://localhost:8080
-- **Metrics**: http://localhost:8080/metrics
+- **Application**: http://localhost:8888
+- **Metrics**: http://localhost:8888/metrics
 - **Prometheus**: http://localhost:9090
 - **Grafana**: http://localhost:3000 (admin/admin)
 
@@ -155,7 +155,7 @@ docker-compose --profile monitoring down
 
 ### Profiling (Debug Mode)
 
-When using `-debug` flag, the program generates profiling files:
+When using `-d` or `--debug` flag, the program generates profiling files:
 - `cpu.out`: CPU profile for analyzing performance bottlenecks
 - `trace.out`: Execution trace for understanding goroutine behavior
 
@@ -173,7 +173,7 @@ When using `-metrics` flag, the program exposes Prometheus metrics at `/metrics`
 
 ```bash
 # View metrics
-curl http://localhost:8080/metrics
+curl http://localhost:8888/metrics
 
 # Key metrics available:
 # - goroutines_tester_tasks_total
@@ -285,7 +285,7 @@ goreleaser release --snapshot --clean
 The binary includes version information that can be displayed:
 
 ```bash
-./cpu-benchmarking-tool -version
+./cpu-benchmarking-tool -v
 ```
 
 ## Contributing

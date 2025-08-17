@@ -75,9 +75,9 @@ jobs:
     - name: Test binary functionality
       run: |
         echo "Testing binary functionality"
-        ./cpu-benchmarking-tool -version
-        ./cpu-benchmarking-tool -tasks=5 -blockKB=128 -mode=single
-        ./cpu-benchmarking-tool -tasks=5 -blockKB=128 -mode=pool -workers=2
+        ./cpu-benchmarking-tool -v
+        ./cpu-benchmarking-tool -t 5 -b 128 -m single
+        ./cpu-benchmarking-tool -t 5 -b 128 -m pool -w 2
 
   goreleaser-check:
     runs-on: ubuntu-latest

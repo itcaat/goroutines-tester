@@ -14,9 +14,7 @@ WORKDIR /app
 
 # Копируем go.mod для кэширования зависимостей
 COPY go.mod ./
-
-# Копируем go.sum если он существует
-COPY go.su[m] ./
+COPY go.sum ./
 
 # Загружаем зависимости (кэшируется если go.mod не изменился)
 RUN go mod download && go mod verify

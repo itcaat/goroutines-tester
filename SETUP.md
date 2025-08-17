@@ -127,7 +127,7 @@ make docker-push
 make monitoring
 
 # Access services:
-# - Application: http://localhost:8080
+# - Application: http://localhost:8888
 # - Prometheus: http://localhost:9090  
 # - Grafana: http://localhost:3000 (admin/admin)
 

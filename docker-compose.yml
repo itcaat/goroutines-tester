@@ -11,16 +11,16 @@ services:
         DATE: ${DATE:-unknown}
     container_name: goroutines-tester
     ports:
-      - "8080:8080"
+      - "8888:8888"
     environment:
       # Настройки бенчмарка
       - TASKS=100
       - BLOCK_KB=512
       - MODE=pool
       - WORKERS=4
-      - METRICS_PORT=8080
+      - METRICS_PORT=8888
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/metrics"]
+      test: ["CMD", "curl", "-f", "http://localhost:8888/metrics"]
       interval: 30s
       timeout: 10s
       retries: 3
