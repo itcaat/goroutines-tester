@@ -6,28 +6,28 @@ import (
 	"sync"
 )
 
-// Config конфигурация для бенчмарка
+// Config configuration for benchmark
 type Config struct {
-	Tasks   int    // количество задач
-	BlockKB int    // размер блока в KB
-	Mode    string // режим выполнения: single | pool
-	Workers int    // количество воркеров для режима pool
+	Tasks   int    // number of tasks
+	BlockKB int    // block size in KB
+	Mode    string // execution mode: single | pool
+	Workers int    // number of workers for pool mode
 }
 
-// Result результат выполнения бенчмарка
+// Result benchmark execution result
 type Result struct {
-	Sink byte // результат вычислений (для предотвращения оптимизации)
+	Sink byte // computation result (to prevent optimization)
 }
 
-// Runner выполняет бенчмарки
+// Runner executes benchmarks
 type Runner struct{}
 
-// NewRunner создает новый Runner
+// NewRunner creates a new Runner
 func NewRunner() *Runner {
 	return &Runner{}
 }
 
-// Run выполняет бенчмарк согласно конфигурации
+// Run executes benchmark according to configuration
 func (r *Runner) Run(config Config) Result {
 	blockBytes := config.BlockKB * 1024
 	var sink byte
@@ -38,14 +38,14 @@ func (r *Runner) Run(config Config) Result {
 	case "pool":
 		sink = r.runPool(config.Tasks, blockBytes, config.Workers)
 	default:
-		// для неизвестного режима возвращаем нулевой результат
+		// for unknown mode return zero result
 		return Result{Sink: 0}
 	}
 
 	return Result{Sink: sink}
 }
 
-// runSingle выполняет задачи последовательно в одной горутине
+// runSingle executes tasks sequentially in a single goroutine
 func (r *Runner) runSingle(tasks int, blockBytes int) byte {
 	var sink byte
 	for i := 0; i < tasks; i++ {
@@ -55,13 +55,13 @@ func (r *Runner) runSingle(tasks int, blockBytes int) byte {
 	return sink
 }
 
-// runPool выполняет задачи с использованием пула воркеров
+// runPool executes tasks using a worker pool
 func (r *Runner) runPool(tasks int, blockBytes int, workers int) byte {
 	jobs := make(chan int, workers*2)
 	results := make(chan [32]byte, workers*2)
 	var wg sync.WaitGroup
 
-	// Запускаем воркеров
+	// Start workers
 	wg.Add(workers)
 	for w := 0; w < workers; w++ {
 		go func() {
@@ -72,7 +72,7 @@ func (r *Runner) runPool(tasks int, blockBytes int, workers int) byte {
 		}()
 	}
 
-	// Отправляем задачи
+	// Send tasks
 	go func() {
 		for i := 0; i < tasks; i++ {
 			jobs <- i
@@ -80,13 +80,13 @@ func (r *Runner) runPool(tasks int, blockBytes int, workers int) byte {
 		close(jobs)
 	}()
 
-	// Ожидаем завершения воркеров и закрываем канал результатов
+	// Wait for workers to finish and close results channel
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
 
-	// Собираем результаты
+	// Collect results
 	var sink byte
 	for s := range results {
 		sink ^= s[0]
@@ -95,7 +95,7 @@ func (r *Runner) runPool(tasks int, blockBytes int, workers int) byte {
 	return sink
 }
 
-// doTask имитация тяжёлой CPU-задачи: генерим блок и хэшируем его
+// doTask simulates heavy CPU task: generate block and hash it
 func doTask(id, blockBytes int) [32]byte {
 	r := rand.New(rand.NewSource(int64(id)))
 	buf := make([]byte, blockBytes)

@@ -28,7 +28,7 @@ type Server struct {
 	date    string
 }
 
-// NewServer создает новый сервер метрик
+// NewServer creates a new metrics server
 func NewServer(version, commit, date string) *Server {
 	return &Server{
 		metrics: &Metrics{
@@ -40,7 +40,7 @@ func NewServer(version, commit, date string) *Server {
 	}
 }
 
-// Start запускает HTTP сервер для метрик
+// Start launches HTTP server for metrics
 func (s *Server) Start(port string) {
 	http.HandleFunc("/metrics", s.metricsHandler)
 	http.HandleFunc("/", s.indexHandler)
@@ -50,12 +50,12 @@ func (s *Server) Start(port string) {
 
 	go func() {
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
-			fmt.Printf("Ошибка запуска metrics сервера: %v\n", err)
+			fmt.Printf("Failed to start metrics server: %v\n", err)
 		}
 	}()
 }
 
-// UpdateMetrics обновляет метрики после выполнения бенчмарка
+// UpdateMetrics updates metrics after benchmark execution
 func (s *Server) UpdateMetrics(tasks int, mode string, workers int, blockKB int, duration time.Duration) {
 	atomic.StoreInt64(&s.metrics.TasksTotal, int64(tasks))
 	atomic.StoreInt64(&s.metrics.TasksCompleted, int64(tasks))
@@ -68,7 +68,7 @@ func (s *Server) UpdateMetrics(tasks int, mode string, workers int, blockKB int,
 	s.metrics.LastRunTime = time.Now()
 }
 
-// metricsHandler возвращает метрики в формате Prometheus
+// metricsHandler returns metrics in Prometheus format
 func (s *Server) metricsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 
@@ -120,7 +120,7 @@ func (s *Server) metricsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// indexHandler возвращает главную страницу
+// indexHandler returns the main page
 func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprintf(w, `<!DOCTYPE html>
@@ -137,11 +137,11 @@ func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 </html>`, s.version, s.metrics.StartTime.Format(time.RFC3339))
 }
 
-// ShowInfo показывает информацию о метриках и ожидает завершения
+// ShowInfo displays metrics information and waits for completion
 func (s *Server) ShowInfo(port string) {
-	fmt.Printf("\nMetrics доступны по адресу: http://localhost:%s/metrics\n", port)
-	fmt.Printf("Для остановки нажмите Ctrl+C\n")
+	fmt.Printf("\nMetrics available at: http://localhost:%s/metrics\n", port)
+	fmt.Printf("Press Ctrl+C to stop\n")
 
-	// Держим программу запущенной для доступа к метрикам
+	// Keep program running for metrics access
 	select {}
 }

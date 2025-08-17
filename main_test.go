@@ -7,7 +7,7 @@ import (
 )
 
 func TestMainIntegration(t *testing.T) {
-	// Интеграционный тест для проверки совместной работы компонентов
+	// Integration test to verify component compatibility
 	runner := benchmark.NewRunner()
 
 	testCases := []struct {
@@ -37,7 +37,7 @@ func TestMainIntegration(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			result := runner.Run(tc.config)
-			// Проверяем, что получили какой-то результат
+			// Verify that we got some result
 			t.Logf("Config: %+v, Result sink: %d", tc.config, result.Sink)
 		})
 	}

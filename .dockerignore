@@ -1,17 +1,17 @@
-# Исключаем ненужные файлы из Docker контекста
+# Exclude unnecessary files from Docker context
 .git
 .github
 .gitignore
 README.md
 LICENSE
 
-# Исключаем артефакты сборки
+# Exclude build artifacts
 goroutines-tester
 *.out
 *.test
 *.prof
 
-# Исключаем временные файлы
+# Exclude temporary files
 .DS_Store
 .vscode
 .idea
@@ -19,11 +19,11 @@ goroutines-tester
 *.swo
 *~
 
-# Исключаем Docker файлы
+# Exclude Docker files
 Dockerfile
 .dockerignore
 
-# Исключаем логи и временные данные
+# Exclude logs and temporary data
 *.log
 tmp/
 temp/

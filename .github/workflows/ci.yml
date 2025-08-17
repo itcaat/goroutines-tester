@@ -124,8 +124,8 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        platforms: linux/amd64  # Только amd64 для CI (быстрее)
-        push: false  # Не пушим, только проверяем сборку
+        platforms: linux/amd64  # Only amd64 for CI (faster)
+        push: false  # Don't push, only test build
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha

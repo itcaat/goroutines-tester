@@ -46,8 +46,8 @@ func TestRunnerSingleMode(t *testing.T) {
 
 	result := runner.Run(config)
 
-	// Проверяем, что результат не нулевой (задачи выполнились)
-	// Sink может быть любым значением, главное - что функция завершилась
+	// Verify that the result is not zero (tasks were executed)
+	// Sink can be any value, the main thing is that the function completed
 	t.Logf("Single mode result sink: %d", result.Sink)
 }
 
@@ -62,7 +62,7 @@ func TestRunnerPoolMode(t *testing.T) {
 
 	result := runner.Run(config)
 
-	// Проверяем, что результат получен
+	// Verify that the result was obtained
 	t.Logf("Pool mode result sink: %d", result.Sink)
 }
 
@@ -77,7 +77,7 @@ func TestRunnerUnknownMode(t *testing.T) {
 
 	result := runner.Run(config)
 
-	// Для неизвестного режима должен возвращаться нулевой sink
+	// For unknown mode, should return zero sink
 	if result.Sink != 0 {
 		t.Errorf("Expected sink=0 for unknown mode, got %d", result.Sink)
 	}

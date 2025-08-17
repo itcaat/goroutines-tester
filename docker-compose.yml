@@ -13,7 +13,7 @@ services:
     ports:
       - "8888:8888"
     environment:
-      # Настройки бенчмарка
+      # Benchmark settings
       - TASKS=100
       - BLOCK_KB=512
       - MODE=pool
@@ -29,7 +29,7 @@ services:
     networks:
       - goroutines-network
 
-  # Prometheus для сбора метрик (опционально)
+  # Prometheus for metrics collection (optional)
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -48,7 +48,7 @@ services:
     profiles:
       - monitoring
 
-  # Grafana для визуализации метрик (опционально)
+  # Grafana for metrics visualization (optional)
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
