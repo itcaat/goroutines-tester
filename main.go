@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/itcaat/goroutines-tester/internal/benchmark"
@@ -20,17 +21,45 @@ var (
 	builtBy = "unknown"
 )
 
+// getEnvInt возвращает значение из ENV или дефолт если ENV не установлена
+func getEnvInt(key string, defaultValue int) int {
+	if val := os.Getenv(key); val != "" {
+		if intVal, err := strconv.Atoi(val); err == nil {
+			return intVal
+		}
+	}
+	return defaultValue
+}
+
+// getEnvString возвращает значение из ENV или дефолт если ENV не установлена
+func getEnvString(key string, defaultValue string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return defaultValue
+}
+
+// getEnvBool возвращает значение из ENV или дефолт если ENV не установлена
+func getEnvBool(key string, defaultValue bool) bool {
+	if val := os.Getenv(key); val != "" {
+		if boolVal, err := strconv.ParseBool(val); err == nil {
+			return boolVal
+		}
+	}
+	return defaultValue
+}
+
 func main() {
-	// Настройка флагов командной строки
+	// Настройка флагов командной строки с учетом ENV переменных
 	var (
-		tasks         = flag.Int("tasks", 200, "сколько задач выполнить")
-		blockKB       = flag.Int("blockKB", 1024, "размер блока данных на задачу (KB)")
-		mode          = flag.String("mode", "single", "режим: single | pool")
-		workers       = flag.Int("workers", runtime.NumCPU(), "кол-во воркеров для режима pool")
+		tasks         = flag.Int("tasks", getEnvInt("TASKS", 200), "сколько задач выполнить")
+		blockKB       = flag.Int("blockKB", getEnvInt("BLOCK_KB", 1024), "размер блока данных на задачу (KB)")
+		mode          = flag.String("mode", getEnvString("MODE", "single"), "режим: single | pool")
+		workers       = flag.Int("workers", getEnvInt("WORKERS", runtime.NumCPU()), "кол-во воркеров для режима pool")
 		showVersion   = flag.Bool("version", false, "показать версию")
-		debug         = flag.Bool("debug", false, "включить сбор профилей trace.out и cpu.out")
-		enableMetrics = flag.Bool("metrics", false, "включить HTTP сервер для экспорта метрик")
-		metricsPort   = flag.String("metrics-port", "8080", "порт для HTTP сервера метрик")
+		debug         = flag.Bool("debug", getEnvBool("DEBUG", false), "включить сбор профилей trace.out и cpu.out")
+		enableMetrics = flag.Bool("metrics", getEnvBool("METRICS", false), "включить HTTP сервер для экспорта метрик")
+		metricsPort   = flag.String("metrics-port", getEnvString("METRICS_PORT", "8888"), "порт для HTTP сервера метрик")
 	)
 	flag.Parse()
 

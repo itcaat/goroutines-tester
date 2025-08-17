@@ -51,12 +51,10 @@ RUN chown appuser:appuser /app/goroutines-tester
 # Переключаемся на непривилегированного пользователя
 USER appuser
 
-# Открываем порт для метрик (по умолчанию 8080)
 EXPOSE 8888
 
-# Healthcheck для проверки доступности метрик
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${METRICS_PORT}/metrics || exit 1
+    CMD curl -f http://localhost:8888/metrics || exit 1
 
-# Команда по умолчанию - запуск с метриками
-CMD ["sh", "-c", "./goroutines-tester -tasks=${TASKS} -blockKB=${BLOCK_KB} -mode=${MODE} -workers=${WORKERS} -metrics -metrics-port=${METRICS_PORT}"]
+
+CMD ["./goroutines-tester"]
