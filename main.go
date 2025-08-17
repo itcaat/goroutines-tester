@@ -99,11 +99,11 @@ func main() {
 		time.Sleep(100 * time.Millisecond) // give server time to start
 	}
 
-	// Validate parameters
 	if workers < 1 {
-		workers = runtime.NumCPU() // if workers not specified or 0, use all CPU cores
+		workers = runtime.GOMAXPROCS(0) // взять то, что Go сам посчитал по cgroups
+	} else {
+		runtime.GOMAXPROCS(workers) // если явно указано через env/флаг
 	}
-	runtime.GOMAXPROCS(workers)
 
 	// Configure benchmark
 	config := benchmark.Config{
