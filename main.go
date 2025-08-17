@@ -58,6 +58,9 @@ func initConfig() {
 func main() {
 	initConfig()
 
+	fmt.Println("NumCPU =", runtime.NumCPU())
+	fmt.Println("GOMAXPROCS =", runtime.GOMAXPROCS(0))
+
 	// Show version and exit
 	if viper.GetBool("version") {
 		fmt.Printf("CPU Benchmarking Tool\n")
