@@ -1,16 +1,15 @@
 package main
 
 import (
-	"crypto/sha256"
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"runtime"
-	"runtime/pprof"
-	"runtime/trace"
-	"sync"
 	"time"
+
+	"github.com/itcaat/goroutines-tester/internal/benchmark"
+	"github.com/itcaat/goroutines-tester/internal/metrics"
+	"github.com/itcaat/goroutines-tester/internal/profiler"
 )
 
 // Version information injected by GoReleaser
@@ -21,39 +20,22 @@ var (
 	builtBy = "unknown"
 )
 
-// имитация тяжёлой CPU-задачи: генерим блок и хэшируем его
-func doTask(id, blockBytes int) [32]byte {
-	r := rand.New(rand.NewSource(int64(id)))
-	buf := make([]byte, blockBytes)
-	for i := range buf {
-		buf[i] = byte(r.Intn(256))
-	}
-	return sha256.Sum256(buf)
-}
-
 func main() {
-	var tasks int
-	var blockKB int
-	var mode string
-	var workers int
-
-	f, _ := os.Create("cpu.out")
-	pprof.StartCPUProfile(f)
-	defer pprof.StopCPUProfile()
-
-	tr, _ := os.Create("trace.out")
-	trace.Start(tr)
-	defer trace.Stop()
-
-	var showVersion bool
-	flag.IntVar(&tasks, "tasks", 200, "сколько задач выполнить")
-	flag.IntVar(&blockKB, "blockKB", 1024, "размер блока данных на задачу (KB)")
-	flag.StringVar(&mode, "mode", "single", "режим: single | pool")
-	flag.IntVar(&workers, "workers", runtime.NumCPU(), "кол-во воркеров для режима pool")
-	flag.BoolVar(&showVersion, "version", false, "показать версию")
+	// Настройка флагов командной строки
+	var (
+		tasks         = flag.Int("tasks", 200, "сколько задач выполнить")
+		blockKB       = flag.Int("blockKB", 1024, "размер блока данных на задачу (KB)")
+		mode          = flag.String("mode", "single", "режим: single | pool")
+		workers       = flag.Int("workers", runtime.NumCPU(), "кол-во воркеров для режима pool")
+		showVersion   = flag.Bool("version", false, "показать версию")
+		debug         = flag.Bool("debug", false, "включить сбор профилей trace.out и cpu.out")
+		enableMetrics = flag.Bool("metrics", false, "включить HTTP сервер для экспорта метрик")
+		metricsPort   = flag.String("metrics-port", "8080", "порт для HTTP сервера метрик")
+	)
 	flag.Parse()
 
-	if showVersion {
+	// Показать версию и выйти
+	if *showVersion {
 		fmt.Printf("CPU Benchmarking Tool\n")
 		fmt.Printf("Version: %s\n", version)
 		fmt.Printf("Commit: %s\n", commit)
@@ -62,60 +44,58 @@ func main() {
 		return
 	}
 
-	if workers < 1 {
-		workers = 1
+	// Инициализация профилирования
+	var prof *profiler.Profiler
+	if *debug {
+		prof = profiler.New()
+		if err := prof.Start(); err != nil {
+			fmt.Printf("Ошибка запуска профилирования: %v\n", err)
+			os.Exit(1)
+		}
+		defer prof.Stop()
 	}
-	blockBytes := blockKB * 1024
-	runtime.GOMAXPROCS(workers)
 
-	fmt.Printf("mode=%s tasks=%d block=%dKB workers=%d\n", mode, tasks, blockKB, workers)
-	start := time.Now()
+	// Инициализация метрик сервера
+	var metricsServer *metrics.Server
+	if *enableMetrics {
+		metricsServer = metrics.NewServer(version, commit, date)
+		metricsServer.Start(*metricsPort)
+		time.Sleep(100 * time.Millisecond) // даем серверу время на запуск
+	}
 
-	var sink byte
+	// Валидация параметров
+	if *workers < 1 {
+		*workers = 1
+	}
+	runtime.GOMAXPROCS(*workers)
 
-	switch mode {
-	case "single":
-		for i := 0; i < tasks; i++ {
-			sum := doTask(i, blockBytes)
-			sink ^= sum[0]
-		}
+	// Конфигурация бенчмарка
+	config := benchmark.Config{
+		Tasks:   *tasks,
+		BlockKB: *blockKB,
+		Mode:    *mode,
+		Workers: *workers,
+	}
 
-	case "pool":
-		jobs := make(chan int, workers*2)
-		results := make(chan [32]byte, workers*2)
-		var wg sync.WaitGroup
-
-		wg.Add(workers)
-		for w := 0; w < workers; w++ {
-			go func() {
-				defer wg.Done()
-				for id := range jobs {
-					results <- doTask(id, blockBytes)
-				}
-			}()
-		}
-
-		go func() {
-			for i := 0; i < tasks; i++ {
-				jobs <- i
-			}
-			close(jobs)
-		}()
-
-		go func() {
-			wg.Wait()
-			close(results)
-		}()
-
-		for s := range results {
-			sink ^= s[0]
-		}
-
-	default:
+	// Проверка режима
+	if *mode != "single" && *mode != "pool" {
 		fmt.Println("unknown mode")
 		return
 	}
 
+	fmt.Printf("mode=%s tasks=%d block=%dKB workers=%d\n", *mode, *tasks, *blockKB, *workers)
+
+	// Выполнение бенчмарка
+	runner := benchmark.NewRunner()
+	start := time.Now()
+	result := runner.Run(config)
 	elapsed := time.Since(start)
-	fmt.Printf("done in %v (sink=%d)\n", elapsed, sink)
+
+	fmt.Printf("done in %v (sink=%d)\n", elapsed, result.Sink)
+
+	// Обновление метрик
+	if *enableMetrics {
+		metricsServer.UpdateMetrics(*tasks, *mode, *workers, *blockKB, elapsed)
+		metricsServer.ShowInfo(*metricsPort)
+	}
 }
