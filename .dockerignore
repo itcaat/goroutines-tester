@@ -1,0 +1,29 @@
+# Исключаем ненужные файлы из Docker контекста
+.git
+.github
+.gitignore
+README.md
+LICENSE
+
+# Исключаем артефакты сборки
+goroutines-tester
+*.out
+*.test
+*.prof
+
+# Исключаем временные файлы
+.DS_Store
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Исключаем Docker файлы
+Dockerfile
+.dockerignore
+
+# Исключаем логи и временные данные
+*.log
+tmp/
+temp/

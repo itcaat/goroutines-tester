@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  goroutines-tester:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        COMMIT: ${COMMIT:-none}
+        DATE: ${DATE:-unknown}
+    container_name: goroutines-tester
+    ports:
+      - "8080:8080"
+    environment:
+      # Настройки бенчмарка
+      - TASKS=100
+      - BLOCK_KB=512
+      - MODE=pool
+      - WORKERS=4
+      - METRICS_PORT=8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - goroutines-network
+
+  # Prometheus для сбора метрик (опционально)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - goroutines-network
+    profiles:
+      - monitoring
+
+  # Grafana для визуализации метрик (опционально)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    networks:
+      - goroutines-network
+    profiles:
+      - monitoring
+
+networks:
+  goroutines-network:
+    driver: bridge
+
+volumes:
+  grafana-storage:

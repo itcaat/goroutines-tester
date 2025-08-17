@@ -15,11 +15,16 @@ This program simulates heavy CPU work by generating random data blocks and compu
 - **Two execution modes:**
   - `single`: Sequential processing on a single thread
   - `pool`: Parallel processing using a worker pool pattern
-- **Built-in profiling:** Automatically generates CPU and trace profiles
+- **Built-in profiling:** Optional CPU and trace profiles generation
+- **Metrics export:** Prometheus-compatible metrics via HTTP endpoint
+- **Docker support:** Containerized deployment with multi-architecture builds
 - **Configurable parameters:** Number of tasks, block size, and worker count
 - **Performance measurement:** Reports execution time for comparison
+- **Monitoring stack:** Optional Prometheus + Grafana integration
 
 ## Installation
+
+### From Source
 
 Make sure you have Go 1.24.3 or later installed.
 
@@ -27,6 +32,26 @@ Make sure you have Go 1.24.3 or later installed.
 git clone https://github.com/itcaat/goroutines-tester
 cd goroutines-tester
 go mod tidy
+```
+
+### Using Docker
+
+```bash
+# Pull from Docker Hub
+docker pull itcaat/goroutines-tester:latest
+
+# Or build locally
+docker build -t goroutines-tester .
+```
+
+### Using Docker Compose
+
+```bash
+# Run application with metrics
+docker-compose up -d
+
+# Run with full monitoring stack (Prometheus + Grafana)
+docker-compose --profile monitoring up -d
 ```
 
 ## Usage
@@ -50,6 +75,10 @@ go run main.go -tasks=500 -blockKB=2048 -mode=pool -workers=8
 - `-blockKB`: Size of data block per task in KB (default: 1024)
 - `-mode`: Execution mode - `single` or `pool` (default: "single")
 - `-workers`: Number of workers for pool mode (default: number of CPU cores)
+- `-debug`: Enable CPU and trace profiling (default: false)
+- `-metrics`: Enable HTTP metrics server (default: false)
+- `-metrics-port`: Port for metrics server (default: "8080")
+- `-version`: Show version information
 
 ### Examples
 
@@ -65,13 +94,70 @@ go run main.go -mode=pool -tasks=1000 -blockKB=4096 -workers=16
 go run main.go -tasks=50 -blockKB=512
 ```
 
+## Docker Usage
+
+### Quick Start
+
+```bash
+# Run with default settings
+docker run -p 8080:8080 itcaat/goroutines-tester:latest
+
+# Custom configuration via environment variables
+docker run -p 8080:8080 \
+  -e TASKS=500 \
+  -e BLOCK_KB=2048 \
+  -e MODE=pool \
+  -e WORKERS=8 \
+  itcaat/goroutines-tester:latest
+
+# Run without metrics (one-shot execution)
+docker run itcaat/goroutines-tester:latest \
+  ./goroutines-tester -tasks=100 -mode=single
+```
+
+### Using Makefile
+
+```bash
+# Build Docker image
+make docker-build
+
+# Run with Docker Compose
+make docker-run
+
+# Start full monitoring stack
+make monitoring
+
+# View logs
+make docker-logs
+
+# Stop containers
+make docker-stop
+```
+
+### Monitoring with Prometheus & Grafana
+
+When running with the monitoring profile:
+
+- **Application**: http://localhost:8080
+- **Metrics**: http://localhost:8080/metrics
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
+
+```bash
+# Start monitoring stack
+docker-compose --profile monitoring up -d
+
+# Stop monitoring stack
+docker-compose --profile monitoring down
+```
+
 ## Performance Analysis
 
-The program automatically generates profiling files:
+### Profiling (Debug Mode)
+
+When using `-debug` flag, the program generates profiling files:
 - `cpu.out`: CPU profile for analyzing performance bottlenecks
 - `trace.out`: Execution trace for understanding goroutine behavior
-
-### Analyzing Profiles
 
 ```bash
 # View CPU profile
@@ -79,6 +165,21 @@ go tool pprof cpu.out
 
 # View execution trace
 go tool trace trace.out
+```
+
+### Metrics (Metrics Mode)
+
+When using `-metrics` flag, the program exposes Prometheus metrics at `/metrics` endpoint:
+
+```bash
+# View metrics
+curl http://localhost:8080/metrics
+
+# Key metrics available:
+# - goroutines_tester_tasks_total
+# - goroutines_tester_execution_time_seconds
+# - goroutines_tester_workers
+# - goroutines_tester_uptime_seconds
 ```
 
 ## Educational Value
@@ -124,6 +225,9 @@ The project includes automated CI that runs on every commit to the main branch a
 - **Testing**: Runs tests across multiple Go versions (1.23.x, 1.24.x)
 - **Cross-platform builds**: Verifies the code builds on Linux, Windows, and macOS
 - **Code quality**: Runs `go vet` and `staticcheck` for code analysis
+- **Docker builds**: Builds and tests Docker images on every commit
+- **Docker publishing**: Pushes to Docker Hub only when creating version tags
+- **Security scanning**: Runs Trivy security scans on published images
 - **GoReleaser validation**: Ensures release configuration is valid
 
 ### Running Tests Locally
