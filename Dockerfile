@@ -52,14 +52,7 @@ RUN chown appuser:appuser /app/goroutines-tester
 USER appuser
 
 # Открываем порт для метрик (по умолчанию 8080)
-EXPOSE 8080
-
-# Устанавливаем переменные окружения с дефолтными значениями
-ENV TASKS=200
-ENV BLOCK_KB=1024
-ENV MODE=single
-ENV WORKERS=0
-ENV METRICS_PORT=8080
+EXPOSE 8888
 
 # Healthcheck для проверки доступности метрик
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
