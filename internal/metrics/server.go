@@ -7,20 +7,20 @@ import (
 	"time"
 )
 
-// Metrics структура для хранения метрик приложения
+// Metrics structure for storing application metrics
 type Metrics struct {
-	TasksTotal     int64         // общее количество выполненных задач
-	TasksCompleted int64         // количество завершенных задач
-	ExecutionTime  time.Duration // время выполнения последнего запуска
-	Mode           string        // режим работы (single/pool)
-	Workers        int           // количество воркеров
-	BlockSizeKB    int           // размер блока в KB
-	StartTime      time.Time     // время запуска приложения
-	LastRunTime    time.Time     // время последнего запуска
-	TotalRuns      int64         // общее количество запусков
+	TasksTotal     int64         // total number of executed tasks
+	TasksCompleted int64         // number of completed tasks
+	ExecutionTime  time.Duration // execution time of last run
+	Mode           string        // execution mode (single/pool)
+	Workers        int           // number of workers
+	BlockSizeKB    int           // block size in KB
+	StartTime      time.Time     // application start time
+	LastRunTime    time.Time     // last execution time
+	TotalRuns      int64         // total number of runs
 }
 
-// Server представляет HTTP сервер для метрик
+// Server represents HTTP server for metrics
 type Server struct {
 	metrics *Metrics
 	version string

@@ -1,52 +1,52 @@
-# Многоэтапная сборка для минимизации размера финального образа
+# Multi-stage build to minimize final image size
 FROM golang:1.25.0-alpine AS builder
 
-# Build arguments для версионирования
+# Build arguments for versioning
 ARG VERSION=dev
 ARG COMMIT=none
 ARG DATE=unknown
 
-# Устанавливаем необходимые пакеты для сборки
+# Install required packages for building
 RUN apk add --no-cache git ca-certificates
 
-# Создаем рабочую директорию
+# Create working directory
 WORKDIR /app
 
-# Копируем go.mod для кэширования зависимостей
+# Copy go.mod for dependency caching
 COPY go.mod ./
 COPY go.sum ./
 
-# Загружаем зависимости (кэшируется если go.mod не изменился)
+# Download dependencies (cached if go.mod unchanged)
 RUN go mod download && go mod verify
 
-# Копируем только необходимые файлы (лучшее кэширование)
+# Copy only necessary files (better caching)
 COPY *.go ./
 COPY internal/ ./internal/
 
-# Собираем приложение с версионированием и оптимизацией
+# Build application with versioning and optimization
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE} -X main.builtBy=docker" \
     -trimpath \
     -o goroutines-tester .
 
-# Финальный образ
+# Final image
 FROM alpine:latest
 
-# Устанавливаем ca-certificates для HTTPS и curl для healthcheck
+# Install ca-certificates for HTTPS and curl for healthcheck
 RUN apk --no-cache add ca-certificates curl
 
-# Создаем пользователя для безопасности
+# Create user for security
 RUN adduser -D -s /bin/sh appuser
 
 WORKDIR /app
 
-# Копируем бинарный файл из builder стадии
+# Copy binary from builder stage
 COPY --from=builder /app/goroutines-tester .
 
-# Меняем владельца на appuser
+# Change ownership to appuser
 RUN chown appuser:appuser /app/goroutines-tester
 
-# Переключаемся на непривилегированного пользователя
+# Switch to non-privileged user
 USER appuser
 
 EXPOSE 8888
