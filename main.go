@@ -27,7 +27,7 @@ func initConfig() {
 	viper.SetDefault("tasks", 200)
 	viper.SetDefault("blockKB", 1024)
 	viper.SetDefault("mode", "single")
-	viper.SetDefault("workers", runtime.NumCPU())
+	viper.SetDefault("workers", 0)
 	viper.SetDefault("debug", false)
 	viper.SetDefault("metrics", false)
 	viper.SetDefault("metrics-port", "8888")
@@ -45,7 +45,7 @@ func initConfig() {
 	pflag.IntP("tasks", "t", viper.GetInt("tasks"), "сколько задач выполнить")
 	pflag.IntP("blockKB", "b", viper.GetInt("blockKB"), "размер блока данных на задачу (KB)")
 	pflag.StringP("mode", "m", viper.GetString("mode"), "режим: single | pool")
-	pflag.IntP("workers", "w", viper.GetInt("workers"), "кол-во воркеров для режима pool")
+	pflag.IntP("workers", "w", viper.GetInt("workers"), "кол-во воркеров для режима pool (0 = автоопределение)")
 	pflag.BoolP("version", "v", false, "показать версию")
 	pflag.BoolP("debug", "d", viper.GetBool("debug"), "включить сбор профилей trace.out и cpu.out")
 	pflag.Bool("metrics", viper.GetBool("metrics"), "включить HTTP сервер для экспорта метрик")
@@ -98,7 +98,7 @@ func main() {
 
 	// Валидация параметров
 	if workers < 1 {
-		workers = 1
+		workers = runtime.NumCPU() // если workers не задан или 0, используем все ядра
 	}
 	runtime.GOMAXPROCS(workers)
 

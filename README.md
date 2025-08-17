@@ -74,7 +74,7 @@ go run main.go -t 500 -b 2048 -m pool -w 8
 - `-t, --tasks`: Number of tasks to execute (default: 200)
 - `-b, --blockKB`: Size of data block per task in KB (default: 1024)
 - `-m, --mode`: Execution mode - `single` or `pool` (default: "single")
-- `-w, --workers`: Number of workers for pool mode (default: number of CPU cores)
+- `-w, --workers`: Number of workers for pool mode (0 = auto-detect, default: 0)
 - `-d, --debug`: Enable CPU and trace profiling (default: false)
 - `--metrics`: Enable HTTP metrics server (default: false)
 - `-p, --metrics-port`: Port for metrics server (default: "8888")
@@ -107,7 +107,7 @@ docker run -p 8888:8888 \
   -e TASKS=500 \
   -e BLOCK_KB=2048 \
   -e MODE=pool \
-  -e WORKERS=8 \
+  -e WORKERS=0 \
   itcaat/goroutines-tester:latest
 
 # Run without metrics (one-shot execution)

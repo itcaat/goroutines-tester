@@ -20,7 +20,7 @@ docker run itcaat/goroutines-tester:latest \
 - `TASKS` - Number of tasks to execute (default: 200)
 - `BLOCK_KB` - Size of data block per task in KB (default: 1024)
 - `MODE` - Execution mode: `single` or `pool` (default: single)
-- `WORKERS` - Number of workers for pool mode (default: 0 = auto)
+- `WORKERS` - Number of workers for pool mode (0 = auto-detect CPU cores, default: 0)
 - `METRICS_PORT` - Port for metrics server (default: 8888)
 
 ### Example with Custom Configuration
@@ -30,7 +30,14 @@ docker run -p 8888:8888 \
   -e TASKS=500 \
   -e BLOCK_KB=2048 \
   -e MODE=pool \
-  -e WORKERS=8 \
+  -e WORKERS=0 \
+  itcaat/goroutines-tester:latest
+
+# Explicit number of workers
+docker run -p 8888:8888 \
+  -e TASKS=500 \
+  -e MODE=pool \
+  -e WORKERS=4 \
   itcaat/goroutines-tester:latest
 ```
 
