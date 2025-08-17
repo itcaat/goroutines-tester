@@ -1,38 +1,37 @@
 # CI/CD Quick Reference
 
-## Docker Build & Push Strategy
+## Workflow Organization
 
-### 🔄 Continuous Build (Every Commit)
+### 📋 CI Workflow (`ci.yml`)
 
 **Triggers:**
-- Push to `main` or `develop` branches
+- Push to `main` branch
 - Pull requests to `main`
 
-**Actions:**
-- ✅ Build Docker image (multi-arch: amd64, arm64)
-- ✅ Test build process
-- ✅ Cache layers for faster builds
-- ✅ Validate multi-architecture compatibility
-- ❌ NO push to Docker Hub
-- ❌ NO artifacts stored (just validation)
+**Jobs:**
+- ✅ **Go Testing** - Multiple Go versions (1.23.x, 1.24.x)
+- ✅ **Cross-platform builds** - Linux/macOS for amd64/arm64
+- ✅ **Binary testing** - Functional tests
+- ✅ **GoReleaser validation** - Config check
+- ✅ **Docker build** - Multi-arch build test (no push)
 
-**Benefit:** Fast feedback on build issues without cluttering Docker Hub
+**Benefit:** Fast comprehensive validation on every commit
 
-### 🚀 Release Publishing (Tags Only)
+### 🚀 Release Workflow (`release.yml`)
 
 **Triggers:**
 - Version tags matching `v*` (e.g., `v1.2.3`)
 
-**Actions:**
-- ✅ Build Docker image (multi-arch)
-- ✅ Push to Docker Hub `itcaat/goroutines-tester`
-- ✅ Create semantic version tags:
-  - `latest`
-  - `v1.2.3` (exact version)
-  - `v1.2` (minor version)
-  - `v1` (major version)
-- ✅ Run security scan with Trivy
-- ✅ Upload security results to GitHub
+**Jobs:**
+- ✅ **GoReleaser** - Binary releases for GitHub
+- ✅ **Docker publish** - Push to Docker Hub `itcaat/goroutines-tester`
+- ✅ **Security scanning** - Trivy scans on published images
+
+**Docker Tags Created:**
+- `latest`
+- `v1.2.3` (exact version)
+- `v1.2` (minor version)
+- `v1` (major version)
 
 ## Release Workflow
 
@@ -65,20 +64,20 @@ docker pull itcaat/goroutines-tester:v1.2.3
 docker pull itcaat/goroutines-tester:v1.2
 ```
 
-## GitHub Actions Jobs
+## GitHub Actions Workflows
 
-### Job 1: `build` (Always runs)
-- Validates Docker build process
-- Tests multi-architecture builds (amd64, arm64)
-- Verifies Dockerfile syntax and dependencies
-- Caches layers for performance
-- Fast feedback without publishing
+### CI Workflow Jobs
 
-### Job 2: `push` (Tag-triggered only)
-- Requires `build` job success
-- Authenticates with Docker Hub
-- Publishes tagged images
-- Runs security scanning
+**`test`** - Go testing matrix (1.23.x, 1.24.x)
+**`build-matrix`** - Cross-platform builds (linux/darwin × amd64/arm64)  
+**`test-binary`** - Binary functionality testing
+**`goreleaser-check`** - GoReleaser config validation
+**`docker-build`** - Docker multi-arch build test
+
+### Release Workflow Jobs
+
+**`goreleaser`** - Creates GitHub releases with binaries
+**`docker-publish`** - Publishes Docker images to Hub with security scanning
 
 ## Benefits
 
