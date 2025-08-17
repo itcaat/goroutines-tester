@@ -27,7 +27,6 @@ COPY internal/ ./internal/
 
 # Собираем приложение с версионированием и оптимизацией
 RUN CGO_ENABLED=0 GOOS=linux go build \
-    -a -installsuffix cgo \
     -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE} -X main.builtBy=docker" \
     -trimpath \
     -o goroutines-tester .
