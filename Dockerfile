@@ -1,5 +1,5 @@
 # Многоэтапная сборка для минимизации размера финального образа
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25.0-alpine AS builder
 
 # Build arguments для версионирования
 ARG VERSION=dev
@@ -18,16 +18,18 @@ COPY go.mod ./
 # Копируем go.sum если он существует
 COPY go.su[m] ./
 
-# Загружаем зависимости
-RUN go mod download
+# Загружаем зависимости (кэшируется если go.mod не изменился)
+RUN go mod download && go mod verify
 
-# Копируем исходный код
-COPY . .
+# Копируем только необходимые файлы (лучшее кэширование)
+COPY *.go ./
+COPY internal/ ./internal/
 
-# Собираем приложение с версионированием
+# Собираем приложение с версионированием и оптимизацией
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -a -installsuffix cgo \
-    -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE} -X main.builtBy=docker" \
+    -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE} -X main.builtBy=docker" \
+    -trimpath \
     -o goroutines-tester .
 
 # Финальный образ
