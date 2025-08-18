@@ -74,3 +74,37 @@ docker-shell: ## Enter container shell
 docker-clean: ## Clean Docker resources
 	docker-compose down -v --remove-orphans
 	docker system prune -f
+
+# Release commands
+release: ## Create and push git tag (usage: make release VERSION=v1.0.11)
+ifndef VERSION
+	$(error VERSION is required. Usage: make release VERSION=v1.0.11)
+endif
+	@echo "Creating release $(VERSION)..."
+	git tag -a $(VERSION) -m "Release $(VERSION)"
+	git push origin $(VERSION)
+	@echo "Release $(VERSION) created and pushed successfully!"
+
+release-patch: ## Create patch release (auto-increment patch version)
+	$(eval CURRENT_TAG := $(shell git tag -l | grep "^v[0-9]" | sort -V | tail -1))
+	$(eval CURRENT_VERSION := $(if $(CURRENT_TAG),$(CURRENT_TAG),v0.0.0))
+	$(eval NEW_VERSION := $(shell echo $(CURRENT_VERSION) | awk -F. '{printf "v%d.%d.%d", substr($$1,2), $$2, $$3+1}'))
+	@echo "Current version: $(CURRENT_VERSION)"
+	@echo "New version: $(NEW_VERSION)"
+	$(MAKE) release VERSION=$(NEW_VERSION)
+
+release-minor: ## Create minor release (auto-increment minor version)
+	$(eval CURRENT_TAG := $(shell git tag -l | grep "^v[0-9]" | sort -V | tail -1))
+	$(eval CURRENT_VERSION := $(if $(CURRENT_TAG),$(CURRENT_TAG),v0.0.0))
+	$(eval NEW_VERSION := $(shell echo $(CURRENT_VERSION) | awk -F. '{printf "v%d.%d.%d", substr($$1,2), $$2+1, 0}'))
+	@echo "Current version: $(CURRENT_VERSION)"
+	@echo "New version: $(NEW_VERSION)"
+	$(MAKE) release VERSION=$(NEW_VERSION)
+
+release-major: ## Create major release (auto-increment major version)
+	$(eval CURRENT_TAG := $(shell git tag -l | grep "^v[0-9]" | sort -V | tail -1))
+	$(eval CURRENT_VERSION := $(if $(CURRENT_TAG),$(CURRENT_TAG),v0.0.0))
+	$(eval NEW_VERSION := $(shell echo $(CURRENT_VERSION) | awk -F. '{printf "v%d.%d.%d", substr($$1,2)+1, 0, 0}'))
+	@echo "Current version: $(CURRENT_VERSION)"
+	@echo "New version: $(NEW_VERSION)"
+	$(MAKE) release VERSION=$(NEW_VERSION)
