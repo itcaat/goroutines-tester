@@ -49,7 +49,7 @@ func NewServer(version, commit, date string) *Server {
 				Help:        "Application information",
 				ConstLabels: constLabels,
 			},
-			[]string{"type", "value"},
+			[]string{"version", "commit", "date"},
 		),
 		uptime: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name:        "app_uptime_seconds",
@@ -121,9 +121,7 @@ func NewServer(version, commit, date string) *Server {
 	registry.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
 	// Set static metrics with new structure
-	metrics.appInfo.WithLabelValues("version", version).Set(1)
-	metrics.appInfo.WithLabelValues("commit", commit).Set(1)
-	metrics.appInfo.WithLabelValues("date", date).Set(1)
+	metrics.appInfo.WithLabelValues(version, commit, date).Set(1)
 
 	return &Server{
 		metrics:  metrics,
@@ -209,9 +207,7 @@ func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
     
     <h4> Application Metrics:</h4>
     <ul>
-        <li><strong>app_info{app="goroutines-tester",type="version"}</strong> - Application version</li>
-        <li><strong>app_info{app="goroutines-tester",type="commit"}</strong> - Git commit hash</li>
-        <li><strong>app_info{app="goroutines-tester",type="date"}</strong> - Build date</li>
+        <li><strong>app_info{app="goroutines-tester",version="...",commit="...",date="..."}</strong> - Application information (version, commit, build date)</li>
         <li><strong>app_uptime_seconds{app="goroutines-tester"}</strong> - Application uptime</li>
         <li><strong>app_tasks_total{app="goroutines-tester"}</strong> - Total number of tasks</li>
         <li><strong>app_execution_time_seconds{app="goroutines-tester"}</strong> - Last execution time</li>
