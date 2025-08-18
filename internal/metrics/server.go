@@ -37,52 +37,67 @@ type Server struct {
 func NewServer(version, commit, date string) *Server {
 	registry := prometheus.NewRegistry()
 
+	// Common labels for all metrics
+	constLabels := prometheus.Labels{
+		"app": "goroutines-tester",
+	}
+
 	metrics := &Metrics{
 		appInfo: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Name: "goroutines_tester_info",
-				Help: "Application information",
+				Name:        "app_info",
+				Help:        "Application information",
+				ConstLabels: constLabels,
 			},
-			[]string{"version", "commit", "date"},
+			[]string{"type", "value"},
 		),
 		uptime: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "goroutines_tester_uptime_seconds",
-			Help: "Application uptime in seconds",
+			Name:        "app_uptime_seconds",
+			Help:        "Application uptime in seconds",
+			ConstLabels: constLabels,
 		}),
 		tasksTotal: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "goroutines_tester_tasks_total",
-			Help: "Total number of tasks configured",
+			Name:        "app_tasks_total",
+			Help:        "Total number of tasks configured",
+			ConstLabels: constLabels,
 		}),
 		tasksCompleted: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "goroutines_tester_tasks_completed",
-			Help: "Number of completed tasks",
+			Name:        "app_tasks_completed",
+			Help:        "Number of completed tasks",
+			ConstLabels: constLabels,
 		}),
 		executionTime: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "goroutines_tester_execution_time_seconds",
-			Help: "Last execution time in seconds",
+			Name:        "app_execution_time_seconds",
+			Help:        "Last execution time in seconds",
+			ConstLabels: constLabels,
 		}),
 		modeInfo: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Name: "goroutines_tester_mode_info",
-				Help: "Current execution mode",
+				Name:        "app_mode_info",
+				Help:        "Current execution mode",
+				ConstLabels: constLabels,
 			},
 			[]string{"mode"},
 		),
 		workers: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "goroutines_tester_workers",
-			Help: "Number of workers",
+			Name:        "app_workers",
+			Help:        "Number of workers",
+			ConstLabels: constLabels,
 		}),
 		blockSizeKB: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "goroutines_tester_block_size_kb",
-			Help: "Block size in KB",
+			Name:        "app_block_size_kb",
+			Help:        "Block size in KB",
+			ConstLabels: constLabels,
 		}),
 		totalRuns: prometheus.NewCounter(prometheus.CounterOpts{
-			Name: "goroutines_tester_total_runs_total",
-			Help: "Total number of benchmark runs",
+			Name:        "app_total_runs_total",
+			Help:        "Total number of benchmark runs",
+			ConstLabels: constLabels,
 		}),
 		lastRunTimestamp: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "goroutines_tester_last_run_timestamp_seconds",
-			Help: "Timestamp of last run",
+			Name:        "app_last_run_timestamp_seconds",
+			Help:        "Timestamp of last run",
+			ConstLabels: constLabels,
 		}),
 		startTime: time.Now(),
 	}
@@ -105,8 +120,10 @@ func NewServer(version, commit, date string) *Server {
 	registry.MustRegister(prometheus.NewGoCollector())
 	registry.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
-	// Set static metrics
-	metrics.appInfo.WithLabelValues(version, commit, date).Set(1)
+	// Set static metrics with new structure
+	metrics.appInfo.WithLabelValues("version", version).Set(1)
+	metrics.appInfo.WithLabelValues("commit", commit).Set(1)
+	metrics.appInfo.WithLabelValues("date", date).Set(1)
 
 	return &Server{
 		metrics:  metrics,
@@ -192,11 +209,13 @@ func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
     
     <h4> Application Metrics:</h4>
     <ul>
-        <li><strong>goroutines_tester_info</strong> - Application information</li>
-        <li><strong>goroutines_tester_uptime_seconds</strong> - Application uptime</li>
-        <li><strong>goroutines_tester_tasks_total</strong> - Total number of tasks</li>
-        <li><strong>goroutines_tester_execution_time_seconds</strong> - Last execution time</li>
-        <li><strong>goroutines_tester_total_runs_total</strong> - Total benchmark runs</li>
+        <li><strong>app_info{app="goroutines-tester",type="version"}</strong> - Application version</li>
+        <li><strong>app_info{app="goroutines-tester",type="commit"}</strong> - Git commit hash</li>
+        <li><strong>app_info{app="goroutines-tester",type="date"}</strong> - Build date</li>
+        <li><strong>app_uptime_seconds{app="goroutines-tester"}</strong> - Application uptime</li>
+        <li><strong>app_tasks_total{app="goroutines-tester"}</strong> - Total number of tasks</li>
+        <li><strong>app_execution_time_seconds{app="goroutines-tester"}</strong> - Last execution time</li>
+        <li><strong>app_total_runs_total{app="goroutines-tester"}</strong> - Total benchmark runs</li>
     </ul>
     
     <h4> Go Runtime Metrics:</h4>
